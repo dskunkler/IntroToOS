@@ -1,7 +1,7 @@
 #ifndef PHASE1_H
 #define PHASE1_H
 
-void phase1(char* filepath, int m, char mapArray[][28]);
+int phase1(char* filepath, int m, char mapArray[][128]);
 
 
 #endif /*PHASE1_H*/
