@@ -31,4 +31,10 @@ void phase4(){
       printf("%s",buff);
     }
   }
+  if(fclose(fp1) == -1){
+    perror("Close of fp1 failed in phase4\n");
+  }
+  if(fclose(fp) == -1){
+    perror("Close of fp in phase4\n");
+  }
 }
