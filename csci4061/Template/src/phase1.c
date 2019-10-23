@@ -70,7 +70,7 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
   	FILE *myfd;
     DIR *dr = opendir(path);
 	int ma;
-	char delim[] = " \n"; 
+	char delim[] = " \n";
 	char **myargv;
     struct stat statbuf;
     struct dirent *de;
@@ -85,15 +85,15 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
                 if (de->d_type == DT_DIR){
                     char *newpath;
 					ma = makeargv(de->d_name,delim, &myargv);
-					printf("path = %s\nname = %s\n",path, myargv[0]);
+				//	printf("path = %s\nname = %s\n",path, myargv[0]);
                     newpath = malloc(sizeof(path) + sizeof("/") + sizeof(de->d_name));
 					memset(newpath, '\0',sizeof(newpath));
                     strcat(newpath, path);
                     strcat(newpath, "/");
                     strcat(newpath, de->d_name);
-					printf("i before function return = %d\n",i);
+					//printf("i before function return = %d\n",i);
                     i = (i + getNfiles(newpath, mArray, i,n)) % n;
-					printf("I AFTER RETURN FROM getNFILES  = %d\n", i);
+					//printf("I AFTER RETURN FROM getNFILES  = %d\n", i);
 					free(newpath);
                 }
 				//if not a directory, append the path and txt file name into Mapper_i.txt.
@@ -104,19 +104,20 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
                     strcat(newpath,path);
                     strcat(newpath, "/");
 					strcat(newpath,de->d_name);
-					printf("i TO CRASH IT= %d\n",i);
-					printf("path = %s\n", path);
-					printf("newpath = %s\n", newpath);
+					//printf("i TO CRASH IT= %d\n",i);
+					//printf("path = %s\n", path);
+					//printf("newpath = %s\n", newpath);
 					myfd = fopen(mArray[i],"a+");
 					fprintf(myfd,"%s\n",newpath);
 					fclose(myfd);
 					free(newpath);
                     i = (i+1)%n;
-					printf("new i = %d\n",i);
+					//printf("new i = %d\n",i);
                 }
             }
         }
     }
+	free(dr);
 	return i;
 }
 
@@ -136,6 +137,7 @@ int phase1(char* filepath, int m, char mapArray[][128]){
         printf("Invalid filepath.\n");
 		return -1;
     }
+	free(dr);
 	//get the file status
 	if(stat(filepath , &statbuf) == -1){
         printf("Failed to get file status\n");

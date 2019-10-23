@@ -18,17 +18,17 @@ void phase3(int m,int mPipes[]){
 	int charCount[26] = {0};
   int finalCount[26] = {0};
   int i,j,nbytes;
- 
+
 
     for(i = 0; i < m; i++){
         close(mPipes[(2*i)+1]);
         //for(j = 0; j < 26; j++){
         nbytes = read(mPipes[(2*i)], charCount, sizeof(charCount));
         if(nbytes>0){
-          printf("Bytes read = %d\n",nbytes);
-          printf("Hello from phase3 charCount[0] = %d\n",charCount[0]);
+        //  printf("Bytes read = %d\n",nbytes);
+          //printf("Hello from phase3 charCount[0] = %d\n",charCount[0]);
         }
-        
+
         else{
           printf("READ FAILED\n");
         }
@@ -37,15 +37,17 @@ void phase3(int m,int mPipes[]){
         }
       // }
     }
+    /*
     for(j = 0; j < 26; j++){
           printf("char %c = %d\n", j+'A', finalCount[j]);
-    }
+    }*/
 
     FILE *RRfd;
     RRfd = fopen("ReducerResult.txt", "w");
     for(i = 0; i < 26; i++){
       fprintf(RRfd, "%c %d\n", 'A'+ i, finalCount[i]);
     }
+    fclose(RRfd);
 
 
 
@@ -55,5 +57,3 @@ void phase3(int m,int mPipes[]){
 
 
 }
-
-

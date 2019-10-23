@@ -25,7 +25,7 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Hello from phase2\n");
 
 	int ma;
-	char delim[] = " \n"; 
+	char delim[] = " \n";
 	char **myargv;
 	pid_t c_pid;
 	int i, j;
@@ -35,12 +35,12 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 	FILE* fp, *fp1;
 
 //close the read end of the pipe
-	
-  
+
+
 
 //create m mapper processes which go through their particular folder and generate number of letters
 	for(i = 0; i < m; i++){
-		printf("i = %d\n",i);
+		//printf("i = %d\n",i);
 		c_pid = fork();
 
 		if(c_pid < 0){
@@ -76,7 +76,7 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 			}
 
 			//get the target for our word count from mapper
-			while(fgets(mapperLine,120,fp)){
+			while(fgets(mapperLine,128,fp)){
 
 				//clean up the target
 				ma = makeargv(mapperLine,delim,&myargv);
@@ -91,20 +91,19 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 					while(fgets(textLine, 128, fp1)){
 						charCount[toupper(textLine[0]) -'A'] += 1;
 
-
 						//printf("textLine[%d] = %d\n", toupper(textLine[0]) -'A', charCount[toupper(textLine[0]) -'A']);
 					}
 				}
 			}
-			
+
 			//FOR INFORMATION PURPOSES DELETE LATER/*
 			/*for(i = 0; i < 26; i++){
 				printf("%c = %d\n",i+'A', charCount[i]);
 				strcat(letCount, i+'A' + '0');
 			}*/
-			printf("# a's in %d = %d",i,charCount[0]);
-			char buff[] = "PIPES WORKING";
-			printf("Writing to pipe %d\n",2*i+1);
+			//printf("# a's in %d = %d",i,charCount[0]);
+			//char buff[] = "PIPES WORKING";
+			//printf("Writing to pipe %d\n",2*i+1);
 			write(mPipes[(2*i)+1], charCount, sizeof(charCount));
 			close(mPipes[2*i+1]);
 
