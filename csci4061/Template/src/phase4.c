@@ -7,29 +7,28 @@
 #include <string.h>
 
 void phase4(){
-
-  printf("Hello from phase 4!&&&&&&&&&&&&&\n");
   FILE *fp, *fp1;
   int fd, d2;
   char buff[128] = "Buff is empty";
+
+  //Open FinalResult.txt
   if((fp1 = fopen("./FinalResult.txt", "w")) == NULL){
       perror("Failed to open FinalResult.txt\n");
   }
+  //get fileno from fp1
   if((fd = fileno(fp1)) == -1){
     perror("fileno broken\n");
   }
-
-  printf("fd = %d\n",fd);
+  //redirect stdoutput to the file descriptor of FinalResult.txt
   d2 = dup2(fd,STDOUT_FILENO);
+  //open ReducerResult.txt
   if((fp = fopen("./ReducerResult.txt", "r")) == NULL){
     perror("Failed to open the file from mapArray");
   }
+  //Write ReducerResult to FinalResult via stdoutput
   else{
     while(fgets(buff,128,fp)!=NULL){
       printf("%s",buff);
     }
   }
-
-
-
 }

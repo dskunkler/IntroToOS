@@ -15,28 +15,62 @@
 	3)	Send the list to Reducer via pipes with proper closing of ends
 */
 
-int makeargv(const char *s, const char *delimiters, char ***argvp);
+//used to clean up line later.
+int makeargv(const char *s, const char *delimiters, char ***argvp)
+{
+  int error;
+  int i;
+  int numtokens;
+  const char *snew;
+  char *t;
 
+  if ((s == NULL) || (delimiters == NULL) || (argvp == NULL)) {
+    errno = EINVAL;
+    return -1;
+  }
+  *argvp = NULL;
+  snew = s + strspn(s, delimiters);         /* snew is real start of string */
+	//printf("snew set = %s\n", snew);
+  if ((t = malloc(strlen(snew) + 1)) == NULL){
+		//printf("malloc of t failed \n");
+    return -1;
+	}
 
-
+  strcpy(t, snew);
+  numtokens = 0;
+  if(strtok(t, delimiters) != NULL)     /* count the number of tokens in s */
+    for(numtokens = 1; strtok(NULL, delimiters) != NULL; numtokens++){};
+		/* create argument array for ptrs to the tokens */
+	if((*argvp = malloc((numtokens + 1)*sizeof(char *))) == NULL){
+		error = errno;
+		free(t);
+		errno = error;
+		//printf("malloc of argvp failed\n");
+		return -1;
+	}
+  /* insert pointers to tokens into the argument array */
+  if (numtokens == 0)
+    free(t);
+  else {
+    strcpy(t, snew);
+    **argvp = strtok(t, delimiters);
+    for (i = 1; i < numtokens; i++)
+      *((*argvp) + i) = strtok(NULL, delimiters);
+    }
+	*((*argvp) + numtokens) = NULL;            /* put in final NULL pointer */
+	//printf("returning numtokens = %d\n",numtokens);
+	return numtokens;
+}
 
 int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
-
-	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Hello from phase2\n");
-
 	int ma;
 	char delim[] = " \n";
 	char **myargv;
 	pid_t c_pid;
 	int i, j;
-	int fd;
 	int charCount[26] = {0};
-	char mapperLine[128],textLine[128], letCount[128] = "";
+	char mapperLine[128],textLine[128];
 	FILE* fp, *fp1;
-
-//close the read end of the pipe
-
-
 
 //create m mapper processes which go through their particular folder and generate number of letters
 	for(i = 0; i < m; i++){
@@ -49,11 +83,10 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 		if(c_pid >0 ){
 			wait(NULL);
 		}
-
-
+		
    //child process
 		if(c_pid == 0){
-
+			//closes all read ends of pipes and all writes accept for its own.
 			for(j = 0; j< m; j++){
 				if(i!= j){
 					if(close(mPipes[2*j+1]) == -1){
@@ -65,17 +98,17 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 				}
 				else{
 					if(close(mPipes[2*j]) == -1){
-						perror("ERROR CLOSING OTHET READ ENDS IN CHILD");
+						perror("ERROR CLOSING OTHER READ ENDS IN CHILD");
 					}
 				}
 			}
-			//printf("Hello from the child %d\n",i);
+
 			//open the mapperfile
 			if((fp = fopen(mapArray[i], "r"))==NULL){
 				perror("Failed to open the file from mapArray");
 			}
 
-			//get the target for our word count from mapper
+			//get the target for our word count from mapArray
 			while(fgets(mapperLine,128,fp)){
 
 				//clean up the target
@@ -83,36 +116,25 @@ int phase2(char *filepath,int m,char mapArray[][128],int mPipes[]){
 
 				//open target
 				if((fp1 = fopen(myargv[0], "r+"))==NULL){
-					printf("Failed to open the %s\n",mapperLine);
 					perror("Failed mapperline open\n");
 				}
 				else{
 					//get each line and increment the appropriate index corresponding to the letter
 					while(fgets(textLine, 128, fp1)){
 						charCount[toupper(textLine[0]) -'A'] += 1;
-
-						//printf("textLine[%d] = %d\n", toupper(textLine[0]) -'A', charCount[toupper(textLine[0]) -'A']);
 					}
 				}
 			}
-
-			//FOR INFORMATION PURPOSES DELETE LATER/*
-			/*for(i = 0; i < 26; i++){
-				printf("%c = %d\n",i+'A', charCount[i]);
-				strcat(letCount, i+'A' + '0');
-			}*/
-			//printf("# a's in %d = %d",i,charCount[0]);
-			//char buff[] = "PIPES WORKING";
-			//printf("Writing to pipe %d\n",2*i+1);
+			//Pipe the array to phase 3
 			write(mPipes[(2*i)+1], charCount, sizeof(charCount));
 			close(mPipes[2*i+1]);
-
+			if(fclose(fp)!= 0){
+				perror("ERROR CLOSING fp\n");
+			}
+			if(fclose(fp1)!=0){
+				perror("ERROR CLOSING fp1\n");
+			}
 			return c_pid;
 		}
-
 	}
-
-
-		printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^GOODBYE from phase2\n");
-
 }

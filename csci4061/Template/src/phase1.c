@@ -19,59 +19,14 @@
 		to Mapper_i.txt in a load balanced manner
 	3) 	Ensure to keep track of the number of text files for empty folder condition
 
-*/int makeargv(const char *s, const char *delimiters, char ***argvp)
-{
-  int error;
-  int i;
-  int numtokens;
-  const char *snew;
-  char *t;
+*/
 
-  if ((s == NULL) || (delimiters == NULL) || (argvp == NULL)) {
-    errno = EINVAL;
-    return -1;
-  }
-  *argvp = NULL;
-  snew = s + strspn(s, delimiters);         /* snew is real start of string */
-	//printf("snew set = %s\n", snew);
-  if ((t = malloc(strlen(snew) + 1)) == NULL){
-		//printf("malloc of t failed \n");
-    return -1;
-	}
-
-  strcpy(t, snew);
-  numtokens = 0;
-  if(strtok(t, delimiters) != NULL)     /* count the number of tokens in s */
-    for(numtokens = 1; strtok(NULL, delimiters) != NULL; numtokens++){};
-		/* create argument array for ptrs to the tokens */
-	if((*argvp = malloc((numtokens + 1)*sizeof(char *))) == NULL){
-		error = errno;
-		free(t);
-		errno = error;
-		//printf("malloc of argvp failed\n");
-		return -1;
-	}
-  /* insert pointers to tokens into the argument array */
-  if (numtokens == 0)
-    free(t);
-  else {
-    strcpy(t, snew);
-    **argvp = strtok(t, delimiters);
-    for (i = 1; i < numtokens; i++)
-      *((*argvp) + i) = strtok(NULL, delimiters);
-    }
-	*((*argvp) + numtokens) = NULL;            /* put in final NULL pointer */
-	//printf("returning numtokens = %d\n",numtokens);
-	return numtokens;
-}
 
 //Recursively moves through the path appending the text files to our Mapper_i.txt files
-int getNfiles(char* path, char mArray[][128], int i, int n){
+int getNfiles(char* path, char mArray[][128], int i, int n)
+{
   	FILE *myfd;
     DIR *dr = opendir(path);
-	int ma;
-	char delim[] = " \n";
-	char **myargv;
     struct stat statbuf;
     struct dirent *de;
     if(dr == NULL){
@@ -84,16 +39,12 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
 				//if its a directory, open it and recurse, tracking number of files appended to keep appropriate index
                 if (de->d_type == DT_DIR){
                     char *newpath;
-					ma = makeargv(de->d_name,delim, &myargv);
-				//	printf("path = %s\nname = %s\n",path, myargv[0]);
                     newpath = malloc(sizeof(path) + sizeof("/") + sizeof(de->d_name));
 					memset(newpath, '\0',sizeof(newpath));
                     strcat(newpath, path);
                     strcat(newpath, "/");
                     strcat(newpath, de->d_name);
-					//printf("i before function return = %d\n",i);
                     i = (i + getNfiles(newpath, mArray, i,n)) % n;
-					//printf("I AFTER RETURN FROM getNFILES  = %d\n", i);
 					free(newpath);
                 }
 				//if not a directory, append the path and txt file name into Mapper_i.txt.
@@ -104,15 +55,11 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
                     strcat(newpath,path);
                     strcat(newpath, "/");
 					strcat(newpath,de->d_name);
-					//printf("i TO CRASH IT= %d\n",i);
-					//printf("path = %s\n", path);
-					//printf("newpath = %s\n", newpath);
 					myfd = fopen(mArray[i],"a+");
 					fprintf(myfd,"%s\n",newpath);
 					fclose(myfd);
 					free(newpath);
                     i = (i+1)%n;
-					//printf("new i = %d\n",i);
                 }
             }
         }
@@ -122,14 +69,12 @@ int getNfiles(char* path, char mArray[][128], int i, int n){
 }
 
 
-int phase1(char* filepath, int m, char mapArray[][128]){
-	printf("******************************HELLO FROM PHASE 1\n\n");
-
+int phase1(char* filepath, int m, char mapArray[][128])
+{
 	pid_t cpid;
 	int i;
 	char numbuf[2];
 	struct stat statbuf;
-
 
 	//open the Sample Directory
 	DIR *dr = opendir(filepath);
@@ -173,8 +118,4 @@ int phase1(char* filepath, int m, char mapArray[][128]){
 	}
 	//populates Mapper_i.txt files with text files from target path
 	getNfiles(filepath,mapArray,0, m);
-
-
-
-		printf("******************************GOODBYE FROM PHASE 1\n\n");
 }
