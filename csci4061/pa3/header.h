@@ -32,6 +32,7 @@ typedef struct argstruct {
     char *filepath;
     struct node *head;
     struct node *tail;
+    int num_nodes;
     struct linked_list* list;
     struct char_histogram* histogram;
     struct pthread_mutex_t* queue_lock;

@@ -44,6 +44,7 @@ void * producer(void * nargs)
         strncpy(line,textline,strlen(textline));      
         create_node(&next_node, line);      
         append_node(&args->tail, next_node);
+        args->num_nodes++;
     }
 
     print_list(&args->head);
