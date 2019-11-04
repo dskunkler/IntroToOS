@@ -31,30 +31,41 @@ void main(int argc, char *argv[])
     }
 
     pthread_t prod;
-    args_t p_args;
+    args_t *p_args;
+    p_args = (args_t*)malloc(sizeof(args_t));
+    int i;
     printf("argv[1]: %s\n", argv[1]);
     pthread_t cons[atoi(argv[1])];
     args_t c_args[atoi(argv[1])];
 
+    //initialize our hist array to 0's
+    p_args->num_nodes = 0;
+    for(i = 0; i < 26; i++){
+        p_args->histogram[i] = 0;
+    }
+
+    //create a dummy node and set head and tail to it.
     struct node *shared_queue;
     create_dummy(&shared_queue);
-    p_args.head = shared_queue;
-    p_args.tail = shared_queue;
+    p_args->head = shared_queue;
+    p_args->tail = shared_queue;
     
-    //shared_queue = (struct node*)malloc(sizeof(struct node));
-    //shared_queue->data = "I'm a new node";
-    //shared_queue->next = NULL;
-
 
     int error;
-    pthread_mutex_t queue_lock, hist_lock;   
+    //pthread_mutex_t queue_lock, hist_lock;   
+    p_args->queue_lock = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+    p_args->hist_lock = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+    p_args->cond = (pthread_cond_t*) malloc(sizeof(pthread_cond_t));
+
 
     //producer thread needs the filepath and the shared queue structure
-    p_args.filepath = argv[2];
-    printf("p_args.filepath: %s\n", p_args.filepath);
-    p_args.head = shared_queue;
-    error = pthread_create(&prod, NULL, producer, (void *) &p_args);
+    p_args->filepath = argv[2];
+    printf("p_args.filepath: %s\n", p_args->filepath);
+    p_args->head = shared_queue;
+
+    error = pthread_create(&prod, NULL, producer, (void *) p_args);
     pthread_join(prod, NULL);
+
     if (error == 0) {
         printf("No error creating producer thread\n");   
     }

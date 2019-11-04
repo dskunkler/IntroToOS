@@ -18,35 +18,20 @@ void create_dummy(struct node** head) {
 
 }
 
-void create_smarty(struct node** head) {
-    (*head) = (struct node*)malloc(sizeof(struct node));
-    (*head)->data = "smarty\n";
-    (*head)->next = NULL;
 
-}
 void create_node(struct node** node, char *data) {
     //printf("Entered create_node__");
-    printf("CREATE NODE DATA = %s\n",data);
     (*node) = (struct node*)malloc(sizeof(struct node));
     (*node)->data = data;
-    //printf("node->data: %s", node->data);
     (*node)->next = NULL;
-    //printf("Exiting create_node\n");
     
 }
 
-// This be broken. While it is appending a node, it's also overwriting
-// the data in every node. I don't understand why.
-void append_node(struct node **tail, struct node* new_node) {
+//Add the new node to the tail
+void append_node(struct node **tail, struct node* new_node){
    
-   printf("new data: %s", new_node->data);
-   printf("tail data before next: %s", (*tail)->data);
-   fflush(stdout);
     (*tail)->next = new_node;
-    printf("tail data after next: %s", (*tail)->data);
-
     *tail = (*tail)->next;
-    printf("tail data after newtail: %s", (*tail)->data);
 };
 
 void remove_2nd_node(struct node** head) {
