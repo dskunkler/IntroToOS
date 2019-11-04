@@ -18,6 +18,11 @@ it will:
 // header here..
 #include <pthread.h>
 
+struct node {
+    char *data;
+    struct node *next;
+};
+
 void main(int argc, char *argv[]);
 void * producer(void * nargs);
 void * consumer(void * nargs);
@@ -25,29 +30,25 @@ void * consumer(void * nargs);
 // Argument structure for threads
 typedef struct argstruct {
     char *filepath;
-    struct node* head;
-    struct node* tail;
+    struct node *head;
+    struct node *tail;
     struct linked_list* list;
     struct char_histogram* histogram;
     struct pthread_mutex_t* queue_lock;
     struct pthread_mutex_t* hist_lock;
 } args_t;
 
-// linked-list structure definition goes here
-// struct linked_list {
-//     struct node * dummy_head;
+void create_dummy(struct node** head);
 
-// };
+void create_node(struct node** node, char *data);
 
-struct node* create_dummy(struct node* head);
+void append_node(struct node** tail, struct node* node);
 
-struct node* create_node(struct node* node, char *data);
+void remove_2nd_node(struct node** head);
 
-void append_node(struct node* head, struct node* node);
+void print_list(struct node** head);
 
-struct node* remove_2nd_node(struct node* head);
-
-void print_list(struct node* head);
+void create_smarty(struct node** head);
 
 // Global result histogram goes here
 // typedef struct char_histogram {

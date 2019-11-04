@@ -20,6 +20,7 @@ void * producer(void * nargs)
     args_t * args = (args_t*) nargs;
     FILE *myfd;
     char textline[1024];
+    char *line;
     char *filepath;
     int error;
 
@@ -37,15 +38,15 @@ void * producer(void * nargs)
         fprintf(stderr, "Failed to open file from structure.\n");
     }
 
+    struct node * next_node;
     while (fgets(textline, 1024, myfd)) {
-        printf("textline: %s", textline);
-        struct node * next_node;
-        //next_node = {textline, NULL};
-        next_node = create_node(next_node, textline);
-        append_node(args->head, next_node);
+        line = (char*)malloc(sizeof(textline));
+        strncpy(line,textline,strlen(textline));      
+        create_node(&next_node, line);      
+        append_node(&args->tail, next_node);
     }
 
-    print_list(args->head);
+    print_list(&args->head);
 
     // if (pthread_mutex_unlock(&args->queue_lock) != 0) {
     //     fprintf(stderr, "Failed to unlock queue_lock.\n");

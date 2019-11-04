@@ -10,65 +10,58 @@
 
 // implement shared queue, final histogram here..
 
-struct node {
-    char *data;
-    struct node *next;
-};
 
-struct node* create_dummy(struct node* head) {
-    head = (struct node*)malloc(sizeof(struct node));
-    head->data = "dummy\n";
-    head->next = NULL;
+void create_dummy(struct node** head) {
+    (*head) = (struct node*)malloc(sizeof(struct node));
+    (*head)->data = "dummy\n";
+    (*head)->next = NULL;
 
-    return head;
 }
 
-struct node* create_node(struct node* node, char *data) {
+void create_smarty(struct node** head) {
+    (*head) = (struct node*)malloc(sizeof(struct node));
+    (*head)->data = "smarty\n";
+    (*head)->next = NULL;
+
+}
+void create_node(struct node** node, char *data) {
     //printf("Entered create_node__");
-    node = (struct node*)malloc(sizeof(struct node));
-    node->data = data;
+    printf("CREATE NODE DATA = %s\n",data);
+    (*node) = (struct node*)malloc(sizeof(struct node));
+    (*node)->data = data;
     //printf("node->data: %s", node->data);
-    node->next = NULL;
+    (*node)->next = NULL;
     //printf("Exiting create_node\n");
-    return node;
+    
 }
 
 // This be broken. While it is appending a node, it's also overwriting
 // the data in every node. I don't understand why.
-void append_node(struct node* head, struct node* new_node) {
-    //printf("Entered append_node__\n");
-    //printf("head->data: %s", head->data);
-    //printf("node->data: %s", new_node->data);
-    //node = (struct node*)malloc(sizeof(struct node));
-    // struct node * temp = (struct node*)malloc(sizeof(struct node));
-    // struct node * tail = (struct node*)malloc(sizeof(struct node));
-    struct node* temp = head;
-    //printf("temp->data: %s", temp->data);
-    while (temp->next != NULL) {
-        printf("Befor, temp->data: %s", temp->data);
-        temp = temp->next;
-        printf("After, temp->data: %s", temp->data);
-    }
-    temp->next = new_node;
-    //printf("After, temp->data: %s", temp->data);
-    //printf("After, temp->next->data: %s", temp->next->data);
-    //printf("node->data: %s", new_node->data);
-    //printf("Exiting append_node\n");
+void append_node(struct node **tail, struct node* new_node) {
+   
+   printf("new data: %s", new_node->data);
+   printf("tail data before next: %s", (*tail)->data);
+   fflush(stdout);
+    (*tail)->next = new_node;
+    printf("tail data after next: %s", (*tail)->data);
+
+    *tail = (*tail)->next;
+    printf("tail data after newtail: %s", (*tail)->data);
 };
 
-struct node* remove_2nd_node(struct node* head) {
+void remove_2nd_node(struct node** head) {
     struct node * temp; // = (struct node*)malloc(sizeof(struct node));
     // temp = head;
-    if (head->next != NULL) {
-        temp = head->next;
-        head->next = head->next->next;
+    if ((*head)->next != NULL) {
+        temp = (*head)->next;
+        (*head)->next = (*head)->next->next;
     }
     free(temp);
-    return head;
 };
 
-void print_list(struct node* head){
-    struct node* cur = head;
+void print_list(struct node **head){
+    printf("HELLO FROM PRINT LIST\n");
+    struct node* cur = (*head);
     int count = 1;
     while(cur != NULL){
         printf("node %d: %s", count, cur->data);

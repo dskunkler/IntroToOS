@@ -36,8 +36,16 @@ void main(int argc, char *argv[])
     pthread_t cons[atoi(argv[1])];
     args_t c_args[atoi(argv[1])];
 
-    struct node * shared_queue;
-    shared_queue = create_dummy(shared_queue);
+    struct node *shared_queue;
+    create_dummy(&shared_queue);
+    p_args.head = shared_queue;
+    p_args.tail = shared_queue;
+    
+    //shared_queue = (struct node*)malloc(sizeof(struct node));
+    //shared_queue->data = "I'm a new node";
+    //shared_queue->next = NULL;
+
+
     int error;
     pthread_mutex_t queue_lock, hist_lock;   
 
@@ -45,31 +53,21 @@ void main(int argc, char *argv[])
     p_args.filepath = argv[2];
     printf("p_args.filepath: %s\n", p_args.filepath);
     p_args.head = shared_queue;
-    //p_args.queue_lock = queue_lock;
-    //p_args.hist_lock = hist_lock;
     error = pthread_create(&prod, NULL, producer, (void *) &p_args);
     pthread_join(prod, NULL);
     if (error == 0) {
         printf("No error creating producer thread\n");   
     }
+    //append_node(p_args->head, shared_queue);
+    //print_list(p_args->head);
 
     //consumer thread needs the shared queue structure and the result histogram structure
     for (int i = 0; i < atoi(argv[1]); i++) {
         c_args[i].head = shared_queue;
-        //c_args[i].histogram = result_histogram;
-        //c_args[i].queue_lock = queue_lock;
-        //c_args[i].hist_lock = hist_lock;
         error = pthread_create(&cons[i], NULL, consumer, (void *) &c_args[i]);
         pthread_join(cons[i], NULL);
         if (error == 0) {
             printf("cons[%d] is incomplete.\n", i);   
         }
     }
-
-    // if (error = pthread_mutex_destroy(&queue_lock))
-    //     fprintf(stderr, "Failed to destroy queue_lock:%s\n", strerror(error));
-
-    // if (error = pthread_mutex_destroy(&hist_lock))
-    //     fprintf(stderr, "Failed to destroy hist_lock:%s\n", strerror(error));
-
 }
