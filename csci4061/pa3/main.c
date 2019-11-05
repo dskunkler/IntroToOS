@@ -75,7 +75,7 @@ void main(int argc, char *argv[])
     //consumer thread needs the shared queue structure and the result histogram structure
     for (int i = 0; i < atoi(argv[1]); i++) {
         c_args[i].head = shared_queue;
-        error = pthread_create(&cons[i], NULL, consumer, (void *) &c_args[i]);
+        error = pthread_create(&cons[i], NULL, consumer, (void *) p_args);
         pthread_join(cons[i], NULL);
         if (error == 0) {
             printf("cons[%d] is incomplete.\n", i);   

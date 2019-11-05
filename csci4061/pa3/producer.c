@@ -29,11 +29,6 @@ void * producer(void * nargs)
     printf("filepath[0]: %s\n", filepath);
 
     
-
-    // if (pthread_mutex_lock(&args->queue_lock) != 0) {
-    //     fprintf(stderr, "Failed to lock queue_lock.\n");
-    // }
-
     if ((myfd = fopen(filepath, "r")) == NULL) {
         fprintf(stderr, "Failed to open file from structure.\n");
     }
@@ -42,10 +37,23 @@ void * producer(void * nargs)
     while (fgets(textline, 1024, myfd)) {
         line = (char*)malloc(sizeof(textline));
         strncpy(line,textline,strlen(textline));      
-        create_node(&next_node, line);      
+        create_node(&next_node, line);
+        //lock mutex to add to linked list
+        pthread_mutex_lock(args->queue_lock);    
         append_node(&args->tail, next_node);
         args->num_nodes++;
+        //broadcast number of nodes
+        pthread_cond_broadcast(args->cond);
+        pthread_mutex_unlock(args->queue_lock);
     }
+
+    //end of file, add -1
+    pthread_mutex_lock(args->queue_lock);
+    create_node(&next_node, "-1");
+    append_node(&args->tail, next_node);
+    args->num_nodes++;
+    pthread_cond_broadcast(args->cond);
+    pthread_mutex_unlock(args->queue_lock);
 
     print_list(&args->head);
 

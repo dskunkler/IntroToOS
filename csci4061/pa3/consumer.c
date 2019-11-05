@@ -18,5 +18,11 @@ void * consumer(void * nargs)
 {
     printf("Entered Consumer Thread\n");
     args_t * args = (args_t*) nargs;
+
+    pthread_mutex_lock(args->queue_lock);
+    while(args->num_nodes < 1){
+        pthread_cond_wait(args->cond, args->queue_lock);
+    }
+
     //return NULL;
 }

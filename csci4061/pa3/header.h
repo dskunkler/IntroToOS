@@ -33,10 +33,10 @@ typedef struct argstruct {
     struct node *head;
     struct node *tail;
     int num_nodes;
-    struct linked_list* list;
-    struct char_histogram* histogram;
-    struct pthread_mutex_t* queue_lock;
-    struct pthread_mutex_t* hist_lock;
+    int histogram[26];
+    pthread_mutex_t* queue_lock;
+    pthread_mutex_t* hist_lock;
+    pthread_cond_t *cond;
 } args_t;
 
 void create_dummy(struct node** head);
@@ -48,8 +48,6 @@ void append_node(struct node** tail, struct node* node);
 void remove_2nd_node(struct node** head);
 
 void print_list(struct node** head);
-
-void create_smarty(struct node** head);
 
 // Global result histogram goes here
 // typedef struct char_histogram {
