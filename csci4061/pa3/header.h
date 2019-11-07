@@ -17,46 +17,50 @@ it will:
 
 // header here..
 #include <pthread.h>
+#include <stdbool.h>
+#include <errno.h>
+
+void main(int argc, char *argv[]);
+void *producer(void *nargs);
+void *consumer(void *nargs);
 
 struct node {
     char *data;
+    int line_number;
     struct node *next;
 };
 
-void main(int argc, char *argv[]);
-void * producer(void * nargs);
-void * consumer(void * nargs);
-
 // Argument structure for threads
 typedef struct argstruct {
+    int c_thread_no;
+    bool p_option;
+    bool b_option;
+    bool bp_option;
+    long buffer_size;
+    FILE *logfd;
+    //int node_count;
+    int num_working; //needs to be a pointer
     char *filepath;
-    struct node *head;
-    struct node *tail;
-    int num_nodes;
-    int histogram[26];
-    pthread_mutex_t* queue_lock;
-    pthread_mutex_t* hist_lock;
-    pthread_cond_t *cond;
+    struct node* head;
+    //struct node* tail;
+    int histogram[26]; //needs to be a pointer
+    //struct char_histogram* histogram;
+    pthread_mutex_t* queue_mutex;
+    pthread_cond_t* queue_cond;
+    pthread_mutex_t* hist_mutex;
+    pthread_cond_t* hist_cond;
+    pthread_mutex_t* myargv_mutex;
+    pthread_mutex_t *cons_num;
 } args_t;
 
-void create_dummy(struct node** head);
-
-void create_node(struct node** node, char *data);
-
-void append_node(struct node** tail, struct node* node);
-
-void remove_2nd_node(struct node** head);
-
-void print_list(struct node** head);
-
-// Global result histogram goes here
-// typedef struct char_histogram {
-
-// };
-
-//
-
-
+int makeargv(const char *s, const char *delimiters, char ***argvp);
+void freemakeargv(char ***argv);
+struct node* create_dummy(struct node* head);
+struct node* create_node(struct node* node, char *data);
+void append_node(struct node* head, char* data, int line_number);
+struct node* remove_2nd_node(struct node* head);
+void print_list(struct node *head);
+void free_list(struct node* head);
 
 
 

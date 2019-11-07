@@ -13,53 +13,51 @@
 // 2)   Feed into shared queue 
 //      Note: the shared queue is a linked list
 
-// needs the filepath and the shared queue structure
+// producer thread function
 void * producer(void * nargs) 
 {
-    printf("Entered Producer Thread\n");
     args_t * args = (args_t*) nargs;
     FILE *myfd;
-    char textline[1024];
     char *line;
-    char *filepath;
+    char textline[1024];
+    char *filepath[1024];
     int error;
+    int line_number = 0;
 
-    printf("args.filepath: %s\n", args->filepath);
-    filepath = args->filepath;
-    printf("filepath[0]: %s\n", filepath);
+    if (args->p_option == true) {
+        fprintf(args->logfd, "producer\n");
+    }
 
-    
-    if ((myfd = fopen(filepath, "r")) == NULL) {
+    filepath[0] = args->filepath;
+
+    if ((myfd = fopen(filepath[0], "r")) == NULL) {
         fprintf(stderr, "Failed to open file from structure.\n");
     }
 
-    struct node * next_node;
-    while (fgets(textline, 1024, myfd)) {
+    while (fgets(textline, 1025, myfd)) {
+        if (args->p_option == true) {
+            fprintf(args->logfd, "producer: %d\n", line_number);
+        }
+        
         line = (char*)malloc(sizeof(textline));
-        strncpy(line,textline,strlen(textline));      
-        create_node(&next_node, line);
-        //lock mutex to add to linked list
-        pthread_mutex_lock(args->queue_lock);    
-        append_node(&args->tail, next_node);
-        args->num_nodes++;
-        //broadcast number of nodes
-        pthread_cond_broadcast(args->cond);
-        pthread_mutex_unlock(args->queue_lock);
+        line = strcpy(line, textline);
+
+        //mutex encapsulate w/ queue_lock
+        pthread_mutex_lock(args->queue_mutex);
+        append_node(args->head, line, line_number); //CRITICAL CODE
+        //args->node_count++; //CRITICAL CODE
+        pthread_cond_signal(args->queue_cond);
+        pthread_mutex_unlock(args->queue_mutex);
+
+        line_number++;
     }
+    
+    pthread_mutex_lock(args->queue_mutex);
+    args->num_working = 0; //CRITICAL CODE
+    pthread_cond_signal(args->queue_cond);
+    pthread_mutex_unlock(args->queue_mutex);
 
-    //end of file, add -1
-    pthread_mutex_lock(args->queue_lock);
-    create_node(&next_node, "-1");
-    append_node(&args->tail, next_node);
-    args->num_nodes++;
-    pthread_cond_broadcast(args->cond);
-    pthread_mutex_unlock(args->queue_lock);
-
-    print_list(&args->head);
-
-    // if (pthread_mutex_unlock(&args->queue_lock) != 0) {
-    //     fprintf(stderr, "Failed to unlock queue_lock.\n");
-    // }
-
-
+    fclose(myfd);
+    printf("producer thread is exiting.\n");
+    pthread_exit(0);
 }
