@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <zconf.h>
+#include <arpa/inet.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include "../include/protocol.h"
+
+FILE *logfp;
+
+void createLogFile(void) {
+    pid_t p = fork();
+    if (p==0)
+        execl("/bin/rm", "rm", "-rf", "log", NULL); //removes log file
+
+    wait(NULL);
+    mkdir("log", ACCESSPERMS); //creates a new directory log
+    logfp = fopen("log/log_client.txt", "w"); //creates new client log text file
+}
+
+int main(int argc, char *argv[]) {
+    int mappers;
+    int i;
+    pid_t c_pid;
+    int mapperID = 1;
+    char numBuff[2];
+    char folderName[100] = {'\0'};
+    char *path = "./MapperInput/Mapper_";
+    char *server_ip;
+    int server_port;
+    FILE* fp;
+
+    if (argc == 5) { // 4 arguments
+        strcpy(folderName, argv[1]);
+        mappers = atoi(argv[2]);
+        server_ip = argv[3];
+        server_port = atoi(argv[4]);
+        if (mappers > MAX_MAPPER_PER_MASTER) {
+            printf("Maximum number of mappers is %d.\n", MAX_MAPPER_PER_MASTER);
+            printf("./client <Folder Name> <# of mappers> <server IP> <server Port>\n");
+            exit(1);
+        }
+
+    } else {
+        printf("Invalid or less number of arguments provided\n");
+        printf("./client <Folder Name> <# of mappers> <server IP> <server Port>\n");
+        exit(1);
+    }
+
+    // create log file
+    createLogFile();
+
+    // phase1 - File Path Partitioning
+    traverseFS(mappers, folderName);
+
+    // Phase2 - Mapper Clients's Deterministic Request Handling
+    //create mappers
+    for(i = 0; i < mappers; i++){
+        c_pid = fork();
+        
+        //some error occured
+        if(c_pid < 0){
+            perror("Error forking\n");
+        }
+        //increment mapperID so our new child has a new and correct ID
+        if(c_pid > 0){
+            mapperID++;
+            wait(NULL); //DO WE WANT TO WAIT? WILL THAT EFFECT PARRALELISM? SHOULD WE MOVE THIS TO LATER?
+        }
+
+        if(c_pid == 0){
+            //create correct name
+            itoa(mapperID,numBuff, 10);
+            strcat(path, numBuff);
+            strcat(path, ".txt");
+
+
+
+            //lets open mapperfile
+            //if((fp = fopen()))
+
+
+        }
+
+    }
+
+
+    // Phase3 - Master Client's Dynamic Request Handling (Extra Credit)
+
+
+    fclose(logfp);
+    return 0;
+
+}
