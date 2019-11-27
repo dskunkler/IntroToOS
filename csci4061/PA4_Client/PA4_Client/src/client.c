@@ -23,7 +23,7 @@ void createLogFile(void) {
 
 int main(int argc, char *argv[]) {
     int mappers;
-    int i;
+    int i, index;
     pid_t c_pid;
     int mapperID = 1;
     char numBuff[2];
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
             wait(NULL); //DO WE WANT TO WAIT? WILL THAT EFFECT PARRALELISM? SHOULD WE MOVE THIS TO LATER?
         }
 
+        //this is a client process
         if(c_pid == 0){
             //create correct name
             sprintf(numBuff, "%d",mapperID);
@@ -87,21 +88,27 @@ int main(int argc, char *argv[]) {
               perror("Error opening filepath\n");
             }
 
+            //traverses the path file creating targets to open
             while(fgets(target, sizeof(target), fp)){
 
-              printf("targggget  = %s\n", target);
+              //cleaning target up so there aren't empty ssspaces at teh end
               sscanf(target, "%s", cleantarg);
               printf("clean targ = %s\n", cleantarg);
+              //open our cleaned up target file
               if((fp1 = fopen(cleantarg, "r")) == NULL){
                 perror("Error opening target\n");
               }
 
+              //traverse our target file line by line. get first letter of first word and increment our alphaCounter
               else{
                 printf("opened %s sucessfully\n", cleantarg);
                 while(fgets(line, sizeof(line), fp1)){
                   printf("Adding letter %c\n",line[0]);
-                  printf("index = %d", toupper(line[0]-'A'));
-                  alphaCounter[toupper(line[0] - 'A')] += 1; //WHY ISNT THIS ADDING?
+                  index = toupper(line[0] - 'A');
+                  printf("index = %d\n", index);
+                  printf("before::: alfCounter[%d] = %d\n",index,alphaCounter[index]);
+                  alphaCounter[index]++; //WHY ISNT THIS ADDING?
+                  printf("after: alfCounter[%d] = %d", index,alphaCounter[index]);
                 }
 
                 for(i = 0; i < 26; i++){
