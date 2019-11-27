@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/socket.h>
 #include <zconf.h>
 #include <arpa/inet.h>
@@ -104,16 +105,18 @@ int main(int argc, char *argv[]) {
                 printf("opened %s sucessfully\n", cleantarg);
                 while(fgets(line, sizeof(line), fp1)){
                   printf("Adding letter %c\n",line[0]);
-                  index = toupper(line[0] - 'A');
+                  index = toupper(line[0])-'A';
                   printf("index = %d\n", index);
                   printf("before::: alfCounter[%d] = %d\n",index,alphaCounter[index]);
-                  alphaCounter[index]++; //WHY ISNT THIS ADDING?
+                  alphaCounter[index]++;
                   printf("after: alfCounter[%d] = %d", index,alphaCounter[index]);
                 }
 
+                /*
                 for(i = 0; i < 26; i++){
                   printf("%c = %d\n", i+ 'A', alphaCounter[i]);
                 }
+                */
               }
 
             }
