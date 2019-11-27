@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     int mapperID = 1;
     char numBuff[2];
     char folderName[100] = {'\0'};
-    char *path = "./MapperInput/Mapper_";
+    char path[100] = "./MapperInput/Mapper_";
     char *server_ip;
     int server_port;
     FILE* fp;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     //create mappers
     for(i = 0; i < mappers; i++){
         c_pid = fork();
-        
+
         //some error occured
         if(c_pid < 0){
             perror("Error forking\n");
@@ -73,16 +73,20 @@ int main(int argc, char *argv[]) {
 
         if(c_pid == 0){
             //create correct name
-            itoa(mapperID,numBuff, 10);
+            sprintf(numBuff, "%d",mapperID);
             strcat(path, numBuff);
             strcat(path, ".txt");
 
 
 
+
             //lets open mapperfile
-            //if((fp = fopen()))
+            if((fp = fopen(path, "r")) == NULL){
+              perror("Error opening filepath\n");
+            }
 
 
+              return 0;
         }
 
     }
