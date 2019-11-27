@@ -27,11 +27,13 @@ int main(int argc, char *argv[]) {
     pid_t c_pid;
     int mapperID = 1;
     char numBuff[2];
+    char target[256],cleantarg[256],line[256];
     char folderName[100] = {'\0'};
     char path[100] = "./MapperInput/Mapper_";
     char *server_ip;
     int server_port;
-    FILE* fp;
+    FILE *fp, *fp1;
+    int alphaCounter[26] = {0};
 
     if (argc == 5) { // 4 arguments
         strcpy(folderName, argv[1]);
@@ -83,6 +85,30 @@ int main(int argc, char *argv[]) {
             //lets open mapperfile
             if((fp = fopen(path, "r")) == NULL){
               perror("Error opening filepath\n");
+            }
+
+            while(fgets(target, sizeof(target), fp)){
+
+              printf("targggget  = %s\n", target);
+              sscanf(target, "%s", cleantarg);
+              printf("clean targ = %s\n", cleantarg);
+              if((fp1 = fopen(cleantarg, "r")) == NULL){
+                perror("Error opening target\n");
+              }
+
+              else{
+                printf("opened %s sucessfully\n", cleantarg);
+                while(fgets(line, sizeof(line), fp1)){
+                  printf("Adding letter %c\n",line[0]);
+                  printf("index = %d", toupper(line[0]-'A'));
+                  alphaCounter[toupper(line[0] - 'A')] += 1; //WHY ISNT THIS ADDING?
+                }
+
+                for(i = 0; i < 26; i++){
+                  printf("%c = %d\n", i+ 'A', alphaCounter[i]);
+                }
+              }
+
             }
 
 
