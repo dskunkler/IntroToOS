@@ -121,6 +121,24 @@ int main(int argc, char *argv[]) {
 
             }
 
+            //create a TCP socket
+            int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+            //specify connect to address
+            struct sockaddr_in address;
+            address.sin_family = AF_INET;
+            address.sin_port = htons(server_port);
+            address.sin_addr.s_addr = inet_addr(server_ip);
+
+            //Connect to it
+            if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))){
+              //do some shit in here based on the specs
+
+              close(sockfd);
+            }
+
+            else{
+              perror("Connection failed\n");
+            }
 
               return 0;
         }
