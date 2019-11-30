@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 
               //cleaning target up so there aren't empty ssspaces at teh end
               sscanf(target, "%s", cleantarg);
-              printf("clean targ = %s\n", cleantarg);
+            //  printf("clean targ = %s\n", cleantarg);
               //open our cleaned up target file
               if((fp1 = fopen(cleantarg, "r")) == NULL){
                 perror("Error opening target\n");
@@ -102,14 +102,14 @@ int main(int argc, char *argv[]) {
 
               //traverse our target file line by line. get first letter of first word and increment our alphaCounter
               else{
-                printf("opened %s sucessfully\n", cleantarg);
+                //printf("opened %s sucessfully\n", cleantarg);
                 while(fgets(line, sizeof(line), fp1)){
-                  printf("Adding letter %c\n",line[0]);
+                  //printf("Adding letter %c\n",line[0]);
                   index = toupper(line[0])-'A';
-                  printf("index = %d\n", index);
-                  printf("before::: alfCounter[%d] = %d\n",index,alphaCounter[index]);
+                  //printf("index = %d\n", index);
+                  //printf("before::: alfCounter[%d] = %d\n",index,alphaCounter[index]);
                   alphaCounter[index]++;
-                  printf("after: alfCounter[%d] = %d", index,alphaCounter[index]);
+                  //printf("after: alfCounter[%d] = %d", index,alphaCounter[index]);
                 }
 
                 /*
@@ -130,14 +130,15 @@ int main(int argc, char *argv[]) {
             address.sin_addr.s_addr = inet_addr(server_ip);
 
             //Connect to it
-            if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))){
+            if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))==0){
+              printf("Connected\n");
               //do some shit in here based on the specs
 
               close(sockfd);
             }
 
             else{
-              perror("Connection failed\n");
+              perror("Connection failed because\n");
             }
 
               return 0;
