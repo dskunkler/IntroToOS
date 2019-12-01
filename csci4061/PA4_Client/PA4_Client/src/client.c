@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
             sprintf(numBuff, "%d",mapperID);
             strcat(path, numBuff);
             strcat(path, ".txt");
+            int rspbuf[LONG_RESPONSE_MSG_SIZE] = {0};
 
 
 
@@ -87,7 +88,30 @@ int main(int argc, char *argv[]) {
             //lets open mapperfile
             if((fp = fopen(path, "r")) == NULL){
               perror("Error opening filepath\n");
+              return 1;
             }
+            //create a TCP socket
+            int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+            //specify connect to address
+            struct sockaddr_in address;
+            address.sin_family = AF_INET;
+            address.sin_port = htons(server_port);
+            address.sin_addr.s_addr = inet_addr(server_ip);
+
+            //Connect to it
+            if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))==0){
+              printf("Connected\n");
+              printf("***********************ID********************* = %d\n", mapperID);
+              //after connected create the msg buffer
+              int msgbuf[REQUEST_MSG_SIZE] = {0};
+              msgbuf[0] = 1;
+              msgbuf[1] = mapperID;
+              write(sockfd,msgbuf,sizeof(msgbuf));
+
+
+              //do some shit in here based on the specs
+
+
 
             //traverses the path file creating targets to open
             while(fgets(target, sizeof(target), fp)){
@@ -102,6 +126,7 @@ int main(int argc, char *argv[]) {
 
               //traverse our target file line by line. get first letter of first word and increment our alphaCounter
               else{
+
                 //printf("opened %s sucessfully\n", cleantarg);
                 while(fgets(line, sizeof(line), fp1)){
                   //printf("Adding letter %c\n",line[0]);
@@ -112,34 +137,51 @@ int main(int argc, char *argv[]) {
                   //printf("after: alfCounter[%d] = %d", index,alphaCounter[index]);
                 }
 
-                /*
+                //set msgbuff correctly
+                msgbuf[0] = 2;
+                msgbuf[1] = mapperID;
+                for(i = 0; i< ALPHABETSIZE; i++){
+                  msgbuf[i+2] = alphaCounter[i];
+                }
+                //write data to our server
+                write(sockfd, msgbuf,sizeof(msgbuf));
+
+                //to be deleted
                 for(i = 0; i < 26; i++){
                   printf("%c = %d\n", i+ 'A', alphaCounter[i]);
                 }
-                */
+
+                //reset our counter for the next pass
+                memset(alphaCounter, 0, sizeof(alphaCounter));
+
               }
 
             }
 
-            //create a TCP socket
-            int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            //specify connect to address
-            struct sockaddr_in address;
-            address.sin_family = AF_INET;
-            address.sin_port = htons(server_port);
-            address.sin_addr.s_addr = inet_addr(server_ip);
 
-            //Connect to it
-            if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))==0){
-              printf("Connected\n");
-              //do some shit in here based on the specs
+            //Request 3
 
-              close(sockfd);
-            }
+            //clear msgbuff
+            memset(msgbuf,0, sizeof(msgbuf));
+            //set buff to correct val's for request 3
+            msgbuf[0] = 3;
+            msgbuf[1] = mapperID;
+            //write request
+            write(sockfd, msgbuf, sizeof(msgbuf));
+            //read response
+            read(sockfd,rspbuf, 28 * sizeof(int));
 
-            else{
-              perror("Connection failed because\n");
-            }
+            //Request 4
+
+            
+            close(sockfd);
+          }
+
+          else{
+            perror("Connection failed because\n");
+          }
+
+
 
               return 0;
         }
