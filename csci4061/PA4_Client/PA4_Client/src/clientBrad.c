@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
     while(fgets(target, sizeof(target), cmdfp) != NULL){
       //clean up line and change to an int
       sscanf(target, "%s", cleantarg);
-      printf("%s\n",cleantarg);
+      //printf("%s\n",cleantarg);
       mastercmd = atoi(cleantarg);
 
       //reset the buffers
