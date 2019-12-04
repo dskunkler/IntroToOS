@@ -273,6 +273,15 @@ void * threadFunction(void * arg) {
                   write(tArg->clientfd, lngrespbuf, sizeof(lngrespbuf));
                   clearLngBuf(lngrespbuf);
 
+                  if(readbuf[RQS_MAPPER_PID]== -1){
+
+                      close(tArg->clientfd);
+                      printf("close connection from %s:%d:%d\n", tArg->clientip, tArg->clientport, tArg->clientfd);
+
+                      //exit thread
+                      pthread_exit(0);
+                  }                 
+
               }
 
               //likely master client tried to access a request it didn't have permission to
