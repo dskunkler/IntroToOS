@@ -326,7 +326,7 @@ int main(int argc, char *argv[]) {
     memset(target, 0, sizeof(target));
     int mastercmd = 0;
 
-    if((cmdfp = fopen("../commands.txt", "r")) ==NULL){ //creates new client log text file
+    if((cmdfp = fopen("./commands.txt", "r")) ==NULL){ //creates new client log text file
       perror("ERROR OPENING COMMANDS.TXT\n");
     }
 
