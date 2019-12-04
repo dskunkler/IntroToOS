@@ -223,11 +223,11 @@ int main(int argc, char *argv[]) {
             }
 
             //do appropriate printing to log
-            printf("[%d] GET_AZLIST: %d < ", mapperID, lngrespbuf[RSP_CODE]);
+            printf("[%d] GET_AZLIST: %d  ", mapperID, lngrespbuf[RSP_CODE]);
             for (int i = 2; i < LONG_RESPONSE_MSG_SIZE; i++) {
                 printf("%d ", lngrespbuf[i]);
             }
-            printf(">\n");
+            printf("\n");
 
             // 4: GET_MAPPER_UPDATES
             //printf("[%d] GET_MAPPER_UPDATES\n", mapperID);
@@ -315,7 +315,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Phase3 - Master Client's Dynamic Request Handling (Extra Credit)
-    /*
+
+    wait(NULL);
+
     FILE *cmdfp;
     memset(target, 0, sizeof(target));
     int mastercmd = 0;
@@ -343,23 +345,66 @@ int main(int argc, char *argv[]) {
       sscanf(target, "%s", cleantarg);
       printf("%s\n",cleantarg);
       mastercmd = atoi(cleantarg);
-      memset(msgbuf,0,sizeof(msgbuf));
 
+      //reset the buffers
+      memset(msgbuf,0,sizeof(msgbuf));
+      memset(responsebuf, 0, sizeof(responsebuf));
+      memset(lngrespbuf, 0 , sizeof(lngrespbuf));
+
+      //I'm not sure why I need to do this? Maybe the port is busy after the last close or close just totally annihilates the socket.
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+      //if we can connect to the server
       if(connect(sockfd, (struct sockaddr*) &address, sizeof(address))==0){
+        //print appropriately and set buffer
           printf("[%d] open connection\n", mapperID);
           msgbuf[RQS_COMMAND_ID] = mastercmd;
           msgbuf[RQS_MAPPER_PID] = mapperID;
-          printf("hello from parent. cmd = %d, id = %d\n",msgbuf[RQS_COMMAND_ID], msgbuf[RQS_MAPPER_PID]);
+
+          //write to server
+          //printf("hello from parent. cmd = %d, id = %d\n",msgbuf[RQS_COMMAND_ID], msgbuf[RQS_MAPPER_PID]);
           write(sockfd, msgbuf, sizeof(msgbuf));
-          if(mastercmd == 3){
+
+          //GET_AZLIST requires a lngresponse buffer, read from server
+          if(mastercmd == GET_AZLIST){
             read(sockfd,lngrespbuf, sizeof(int) * LONG_RESPONSE_MSG_SIZE);
-            printf("response: code: %d, id:%d\n",lngrespbuf[RSP_CODE], lngrespbuf[RSP_DATA]);
+            //printf("response: code: %d, id:%d\n",lngrespbuf[RSP_CODE], lngrespbuf[RSP_DATA]);
+            printf("[%d] GET_AZLIST: %d  ", mapperID, lngrespbuf[RSP_CODE]);
+            for (int i = 2; i < LONG_RESPONSE_MSG_SIZE; i++) {
+                printf("%d ", lngrespbuf[i]);
+            }
+            printf("\n");
           }
           else{
             read(sockfd, responsebuf, sizeof(int)*REQUEST_MSG_SIZE);
-            printf("response: code: %d, id:%d\n",responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+            //printf("response: code: %d, id:%d\n",responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+          }
+          switch(mastercmd){
+            case CHECKIN:
+              printf("[%d] CHECKIN: %d %d\n", mapperID, responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+              break;
+
+            case GET_MAPPER_UPDATES:
+              printf("[%d] GET_MAPPER_UPDATES: %d %d\n", mapperID, responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+              break;
+
+            case GET_ALL_UPDATES:
+            printf("[%d] GET_ALL_UPDATES: %d %d\n", mapperID, responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+            break;
+
+            case CHECKOUT:
+            printf("[%d] CHECKOUT: %d %d\n", mapperID, responsebuf[RSP_CODE], responsebuf[RSP_DATA]);
+            break;
+
+            default:
+              printf("wrong command\n");
           }
 
+          printf("[%d] close connection\n", mapperID);
+          close(sockfd);
+        }
+        else{
+          printf("CONNECTION FAILED\n");
           close(sockfd);
         }
 
@@ -372,7 +417,7 @@ int main(int argc, char *argv[]) {
 
 
     fclose(cmdfp);
-    */
+
     fclose(logfp);
     return 0;
 
