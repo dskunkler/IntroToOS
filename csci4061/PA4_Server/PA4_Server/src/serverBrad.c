@@ -72,16 +72,17 @@ void * threadFunction(void * arg) {
         //sleep(2);
         //printf("num: %d\n", num);
         num = read(tArg->clientfd, readbuf, sizeof(int)*REQUEST_MSG_SIZE);
+        printf("******cmd: %d, id: %d\n", readbuf[RQS_COMMAND_ID], readbuf[RQS_MAPPER_PID]);
         //printf("[%d] num: %d loopcount: %d\n", id, num, loopcount);
         if (num != -1) {
             //printf("sizeof(readbuf): %ld\n", sizeof(readbuf));
 
             //make sure mapper_id is valid
-            if((readbuf[RQS_MAPPER_PID] < CHECKOUT && readbuf[RQS_MAPPER_PID > 0]) || readbuf[RQS_MAPPER_PID] == -1 ){
+            if((readbuf[RQS_MAPPER_PID] > 0) || readbuf[RQS_MAPPER_PID] == -1 ){
               //if valid proceed with requests
 
               // 1: CHECKIN
-              if (readbuf[RQS_COMMAND_ID] == CHECKIN && readbuf[RQS_MAPPER_PID!= -1]) {
+              if (readbuf[RQS_COMMAND_ID] == CHECKIN && readbuf[RQS_MAPPER_PID]!= -1) {
 
                 //if its not checked in, proceed
                 if(updateStatus[id-1][US_IS_CHECKEDIN] != CHECKIN){
@@ -148,6 +149,7 @@ void * threadFunction(void * arg) {
 
                   //extra credit
                   if(readbuf[RQS_MAPPER_PID]== -1){
+                      printf("CLOSING MASTER CLIENT CONNECTION\n");
                       close(tArg->clientfd);
                       printf("close connection from %s:%d:%d\n", tArg->clientip, tArg->clientport, tArg->clientfd);
 
@@ -168,10 +170,20 @@ void * threadFunction(void * arg) {
                   sem_post(tArg->azList_sem);
                   write(tArg->clientfd, lngrespbuf, sizeof(lngrespbuf));
                   clearLngBuf(lngrespbuf);
+
+                  //extra credit: close for each command from master client
+                  if(readbuf[RQS_MAPPER_PID]== -1){
+
+                      close(tArg->clientfd);
+                      printf("close connection from %s:%d:%d\n", tArg->clientip, tArg->clientport, tArg->clientfd);
+
+                      //exit thread
+                      pthread_exit(0);
+                  }
               }
 
               // 4: GET_MAPPER_UPDATES
-              else if (readbuf[RQS_COMMAND_ID] == GET_MAPPER_UPDATES && readbuf[RQS_COMMAND_ID]!= -1) {
+              else if (readbuf[RQS_COMMAND_ID] == GET_MAPPER_UPDATES && readbuf[RQS_MAPPER_PID]!= -1) {
                   printf("[%d] GET_MAPPER_UPDATES\n", id);
                   responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
                   responsebuf[RSP_CODE] = RSP_OK;
@@ -222,7 +234,7 @@ void * threadFunction(void * arg) {
 
                   //Safely checkout in our table
                   sem_wait(tArg->updateStatus_sem);
-                  updateStatus[id-1][2] = 0;
+                  updateStatus[id-1][US_IS_CHECKEDIN] = 0;
                   sem_post(tArg->updateStatus_sem);
 
                   //write it back to the client
@@ -236,6 +248,7 @@ void * threadFunction(void * arg) {
                   //exit thread
                   pthread_exit(0);
                 }
+
                 //if it is already checked out
                 else{
                   //set response to RSP_NOK
@@ -251,6 +264,7 @@ void * threadFunction(void * arg) {
 
               // Error, incorrect Command ID
               else if(readbuf[RQS_COMMAND_ID] < CHECKIN || readbuf[RQS_COMMAND_ID] > CHECKOUT){
+                printf("INCORRECT RQS COMMAND ID\n");
                 //set error response
                   lngrespbuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
                   lngrespbuf[RSP_CODE] = RSP_NOK;
@@ -272,6 +286,15 @@ void * threadFunction(void * arg) {
                   //inform client and clear buffer
                   write(tArg->clientfd, responsebuf, sizeof(responsebuf));
                   clearBuf(responsebuf);
+                  if(readbuf[RQS_MAPPER_PID] == -1){
+                    //close connection
+                    close(tArg->clientfd);
+                    printf("close connection from %s:%d:%d\n", tArg->clientip, tArg->clientport, tArg->clientfd);
+
+                    //exit thread
+                    pthread_exit(0);
+
+                  }
               }
             }
 
@@ -297,7 +320,7 @@ void * threadFunction(void * arg) {
         memset(responsebuf, 0, sizeof(responsebuf));
 
     }
-    printf("I escaped the while loop\n");
+    //printf("I escaped the while loop\n");
 
 
   pthread_mutex_lock(&currentConn_lock);
@@ -395,6 +418,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Close the socket.
+  printf("CLOSING THE SOCKET\n");
 	close(sock);
 
     //return 0;
