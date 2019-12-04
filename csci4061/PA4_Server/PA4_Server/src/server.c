@@ -293,7 +293,8 @@ void * threadFunction(void * arg) {
 
               // Error, incorrect Command ID
               else if(readbuf[RQS_COMMAND_ID] < CHECKIN || readbuf[RQS_COMMAND_ID] > CHECKOUT){
-					printf("INCORRECT RQS COMMAND ID\n");
+					
+					
 					//set error response
 					lngrespbuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 					lngrespbuf[RSP_CODE] = RSP_NOK;
@@ -317,7 +318,7 @@ void * threadFunction(void * arg) {
               //likely master client tried to access a request it didn't have permission to
               else {
 					//set resp buff to incorrect
-					printf("ERROR SOMEWHERE WTF? CMN: %d PID: %d\n", readbuf[RQS_COMMAND_ID], readbuf[RQS_MAPPER_PID]);
+					
 					responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 					responsebuf[RSP_CODE] = RSP_NOK;
 					responsebuf[RSP_DATA] = readbuf[RQS_MAPPER_PID];
@@ -339,8 +340,7 @@ void * threadFunction(void * arg) {
 
           //Error, Incorrect mapper ID
 			else{
-				//notify incorrectness
-				printf("INCORRECT MAPPER ID = %d, cmd = %d\n",readbuf[RQS_MAPPER_PID],readbuf[RQS_COMMAND_ID]);
+						
 
 				//set response buf appropriately
 				responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
