@@ -121,7 +121,7 @@ void * threadFunction(void * arg) {
               }
 
               // 2: UPDATE_AZLIST
-              else if (readbuf[RQS_COMMAND_ID] == UPDATE_AZLIST && readbuf[RQS_MAPPER_PID]!= -1) {
+              else if (readbuf[RQS_COMMAND_ID] == UPDATE_AZLIST && updateStatus[id-1][US_IS_CHECKEDIN] == 1 && readbuf[RQS_MAPPER_PID]!= -1) {
 
                   //update azList from readbuf data
                   sem_wait(tArg->azList_sem);
@@ -156,7 +156,7 @@ void * threadFunction(void * arg) {
               }
 
 				// 3: GET_AZLIST
-				else if (readbuf[RQS_COMMAND_ID] == GET_AZLIST) {
+				else if (readbuf[RQS_COMMAND_ID] == GET_AZLIST && (updateStatus[id-1][US_IS_CHECKEDIN] == 1 ||readbuf[RQS_MAPPER_PID] == -1)) {
 					printf("[%d] GET_AZLIST\n", id);
 
 					//set lng resonse buffer
@@ -186,7 +186,7 @@ void * threadFunction(void * arg) {
               	}
 
 				// 4: GET_MAPPER_UPDATES
-				else if (readbuf[RQS_COMMAND_ID] == GET_MAPPER_UPDATES) {
+				else if (readbuf[RQS_COMMAND_ID] == GET_MAPPER_UPDATES && (updateStatus[id-1][US_IS_CHECKEDIN] == 1|| readbuf[RQS_MAPPER_PID]== -1)) {
 
 					//Master Client cannot access this field
 					if(readbuf[RQS_MAPPER_PID]!= -1){
@@ -210,15 +210,21 @@ void * threadFunction(void * arg) {
 						responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 						responsebuf[RSP_CODE] = RSP_NOK;
 						responsebuf[RSP_DATA] = 0; //Master client can never update
-						
+
 						//write response and clearbuff
 						write(tArg->clientfd, responsebuf, sizeof(responsebuf));
 						clearBuf(responsebuf);
+
+						close(tArg->clientfd);
+						printf("close connection from %s:%d:%d\n", tArg->clientip, tArg->clientport, tArg->clientfd);
+
+						//exit thread
+						pthread_exit(0);
 					}
               	}
 
               // 5: GET_ALL_UPDATES
-              else if (readbuf[RQS_COMMAND_ID] == GET_ALL_UPDATES) {
+              else if (readbuf[RQS_COMMAND_ID] == GET_ALL_UPDATES && (updateStatus[id-1][US_IS_CHECKEDIN] == 1|| readbuf[RQS_MAPPER_PID] == -1) ) {
 					printf("[%d] GET_ALL_UPDATES\n", id);
 					responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 					responsebuf[RSP_CODE] = RSP_OK;
@@ -287,7 +293,7 @@ void * threadFunction(void * arg) {
 
               // Error, incorrect Command ID
               else if(readbuf[RQS_COMMAND_ID] < CHECKIN || readbuf[RQS_COMMAND_ID] > CHECKOUT){
-					//printf("INCORRECT RQS COMMAND ID\n");
+					printf("INCORRECT RQS COMMAND ID\n");
 					//set error response
 					lngrespbuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 					lngrespbuf[RSP_CODE] = RSP_NOK;
@@ -311,7 +317,7 @@ void * threadFunction(void * arg) {
               //likely master client tried to access a request it didn't have permission to
               else {
 					//set resp buff to incorrect
-					//printf("ERROR SOMEWHERE WTF? CMN: %d PID: %d\n", readbuf[RQS_COMMAND_ID], readbuf[RQS_MAPPER_PID]);
+					printf("ERROR SOMEWHERE WTF? CMN: %d PID: %d\n", readbuf[RQS_COMMAND_ID], readbuf[RQS_MAPPER_PID]);
 					responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
 					responsebuf[RSP_CODE] = RSP_NOK;
 					responsebuf[RSP_DATA] = readbuf[RQS_MAPPER_PID];
@@ -334,7 +340,7 @@ void * threadFunction(void * arg) {
           //Error, Incorrect mapper ID
 			else{
 				//notify incorrectness
-				//printf("INCORRECT MAPPER ID = %d, cmd = %d\n",readbuf[RQS_MAPPER_PID],readbuf[RQS_COMMAND_ID]);
+				printf("INCORRECT MAPPER ID = %d, cmd = %d\n",readbuf[RQS_MAPPER_PID],readbuf[RQS_COMMAND_ID]);
 
 				//set response buf appropriately
 				responsebuf[RSP_COMMAND_ID] = readbuf[RQS_COMMAND_ID];
